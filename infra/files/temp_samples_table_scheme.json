@@ -1,0 +1,20 @@
+[
+  {
+    "description": "Location of the sample",
+    "mode": "REQUIRED",
+    "name": "LOCATION",
+    "type": "STRING"
+  },
+  {
+    "description": "The date and time when this sample was taken",
+    "mode": "REQUIRED",
+    "name": "SAMPLE_TIME",
+    "type": "DATETIME"
+  },
+  {
+    "description": "Temperature",
+    "mode": "REQUIRED",
+    "name": "TEMP_FAHRENHEIT",
+    "type": "FLOAT64"
+  }
+]
