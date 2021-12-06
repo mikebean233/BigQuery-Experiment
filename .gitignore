@@ -1,5 +1,5 @@
 .terraform*
 *tfstate*
 *tfvars*
-*.json
+*key.json
 .idea/*
