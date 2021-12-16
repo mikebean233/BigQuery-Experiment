@@ -4,28 +4,44 @@ provider "google" {
   region      = var.region
 }
 
-module "bigquery" {
-  source  = "terraform-google-modules/bigquery/google"
-  dataset_id                 = "temp_samples_ds_id"
-  dataset_name               = "temp_samples_ds_name"
-  description                = "BigQuery Experiment Dataset"
-  project_id                 = var.project_id
-  location                   = "US"
+resource "google_bigquery_dataset" "tempSamplesDS" {
+  dataset_id                  = "temp_samples_ds_id"
+  friendly_name               = "temp_samples_ds_name"
+  description                 = "BigQuery Experiment Dataset"
+  location                    = "US"
+
   delete_contents_on_destroy = true
-  tables = [
-    {
-      table_id           = "temp_samples",
-      schema             = file("../files/temp_samples_table_scheme.json"),
-      time_partitioning  = null,
-      range_partitioning = null,
-      expiration_time    = 2524604400000, # 2050/01/01
-      clustering         = [],
-      labels = {
-        table = "temp_samples"
-      }
-    }
-  ]
-  dataset_labels = {
+  labels = {
     table = "temp_samples"
   }
+}
+
+resource "google_bigquery_table" "tempSamplesTable" {
+  dataset_id = google_bigquery_dataset.tempSamplesDS.dataset_id
+  table_id   = "temp_samples"
+
+  deletion_protection = false
+  labels = {
+    table = "temp_samples"
+  }
+
+  schema = file("../files/temp_samples_table_scheme.json")
+}
+
+data "google_iam_policy" "tempSamplesPolicy" {
+  binding {
+    role = var.update_data_role
+
+    members = [
+      "serviceAccount:${var.java_writer_sa_address}"
+    ]
+  }
+}
+
+resource "google_bigquery_table_iam_policy" "tempSamplesPolicy" {
+  project = var.project_id
+  dataset_id = google_bigquery_dataset.tempSamplesDS.dataset_id
+  table_id = google_bigquery_table.tempSamplesTable.table_id
+  policy_data = data.google_iam_policy.tempSamplesPolicy.policy_data
+
 }
